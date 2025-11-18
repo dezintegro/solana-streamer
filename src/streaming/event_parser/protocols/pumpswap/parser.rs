@@ -25,6 +25,9 @@ pub fn parse_pumpswap_instruction_data(
 ) -> Option<DexEvent> {
     match discriminator {
         discriminators::BUY_IX => parse_buy_instruction(data, accounts, metadata),
+        discriminators::BUY_EXACT_QUOTE_IN_IX => {
+            parse_buy_exact_quote_in_instruction(data, accounts, metadata)
+        }
         discriminators::SELL_IX => parse_sell_instruction(data, accounts, metadata),
         discriminators::CREATE_POOL_IX => {
             parse_create_pool_instruction(data, accounts, metadata)
@@ -159,6 +162,43 @@ fn parse_buy_instruction(
         protocol_fee_recipient_token_account: accounts[10],
         base_token_program: accounts[11],
         quote_token_program: accounts[12],
+        coin_creator_vault_ata: accounts.get(17).copied().unwrap_or_default(),
+        coin_creator_vault_authority: accounts.get(18).copied().unwrap_or_default(),
+        ..Default::default()
+    }))
+}
+
+/// 解析精确报价买入指令事件
+fn parse_buy_exact_quote_in_instruction(
+    data: &[u8],
+    accounts: &[Pubkey],
+    mut metadata: EventMetadata,
+) -> Option<DexEvent> {
+    metadata.event_type = EventType::PumpSwapBuy;
+
+    if data.len() < 16 || accounts.len() < 11 {
+        return None;
+    }
+
+    let spendable_quote_in = read_u64_le(data, 0)?;
+    let min_base_amount_out = read_u64_le(data, 8)?;
+
+    Some(DexEvent::PumpSwapBuyEvent(PumpSwapBuyEvent {
+        metadata,
+        base_amount_out: min_base_amount_out,
+        max_quote_amount_in: spendable_quote_in,
+        pool: accounts[0],
+        user: accounts[1],
+        base_mint: accounts[3],
+        quote_mint: accounts[4],
+        user_base_token_account: accounts[5],
+        user_quote_token_account: accounts[6],
+        pool_base_token_account: accounts[7],
+        pool_quote_token_account: accounts[8],
+        protocol_fee_recipient: accounts[9],
+        protocol_fee_recipient_token_account: accounts[10],
+        base_token_program: accounts.get(11).copied().unwrap_or_default(),
+        quote_token_program: accounts.get(12).copied().unwrap_or_default(),
         coin_creator_vault_ata: accounts.get(17).copied().unwrap_or_default(),
         coin_creator_vault_authority: accounts.get(18).copied().unwrap_or_default(),
         ..Default::default()

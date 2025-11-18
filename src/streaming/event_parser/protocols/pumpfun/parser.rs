@@ -28,6 +28,9 @@ pub fn parse_pumpfun_instruction_data(
             parse_create_v2_token_instruction(data, accounts, metadata)
         }
         discriminators::BUY_IX => parse_buy_instruction(data, accounts, metadata),
+        discriminators::BUY_EXACT_SOL_IN_IX => {
+            parse_buy_exact_sol_in_instruction(data, accounts, metadata)
+        }
         discriminators::SELL_IX => parse_sell_instruction(data, accounts, metadata),
         discriminators::MIGRATE_IX => parse_migrate_instruction(data, accounts, metadata),
         _ => None,
@@ -268,6 +271,44 @@ fn parse_buy_instruction(
         fee_program: accounts[15],
         max_sol_cost,
         amount,
+        is_buy: true,
+        ..Default::default()
+    }))
+}
+
+// 解析精确SOL买入指令事件
+fn parse_buy_exact_sol_in_instruction(
+    data: &[u8],
+    accounts: &[Pubkey],
+    mut metadata: EventMetadata,
+) -> Option<DexEvent> {
+    metadata.event_type = EventType::PumpFunBuy;
+
+    if data.len() < 16 || accounts.len() < 13 {
+        return None;
+    }
+    let spendable_sol_in = u64::from_le_bytes(data[0..8].try_into().unwrap());
+    let min_tokens_out = u64::from_le_bytes(data[8..16].try_into().unwrap());
+    Some(DexEvent::PumpFunTradeEvent(PumpFunTradeEvent {
+        metadata,
+        global: accounts[0],
+        fee_recipient: accounts[1],
+        mint: accounts[2],
+        bonding_curve: accounts[3],
+        associated_bonding_curve: accounts[4],
+        associated_user: accounts[5],
+        user: accounts[6],
+        system_program: accounts[7],
+        token_program: accounts[8],
+        creator_vault: accounts[9],
+        event_authority: accounts[10],
+        program: accounts[11],
+        global_volume_accumulator: *accounts.get(12).unwrap_or(&Pubkey::default()),
+        user_volume_accumulator: *accounts.get(13).unwrap_or(&Pubkey::default()),
+        fee_config: Pubkey::default(),
+        fee_program: Pubkey::default(),
+        max_sol_cost: spendable_sol_in,
+        amount: min_tokens_out,
         is_buy: true,
         ..Default::default()
     }))
