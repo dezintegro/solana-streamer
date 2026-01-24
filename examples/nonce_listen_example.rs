@@ -58,6 +58,7 @@ async fn test_grpc() -> Result<(), Box<dyn std::error::Error>> {
         vec![account_filter],
         event_type_filter,
         None,
+        None,
         callback,
     )
     .await?;

@@ -85,6 +85,7 @@ async fn test_grpc() -> Result<(), Box<dyn std::error::Error>> {
         vec![all_pump_ata.clone(), all_usdc_ata.clone()],
         event_type_filter.clone(),
         None,
+        None,
         callback,
     )
     .await?;

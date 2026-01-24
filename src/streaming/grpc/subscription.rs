@@ -109,6 +109,7 @@ impl SubscriptionManager {
         &self,
         transaction_filter: Vec<TransactionFilter>,
         event_type_filter: Option<&EventTypeFilter>,
+        include_failed: Option<bool>,
     ) -> Option<TransactionsFilterMap> {
         if event_type_filter.is_some() && !event_type_filter.unwrap().include_transaction_event() {
             return None;
@@ -119,7 +120,7 @@ impl SubscriptionManager {
                 format!("transaction_{}", index),
                 SubscribeRequestFilterTransactions {
                     vote: Some(false),
-                    failed: Some(false),
+                    failed: Some(include_failed.unwrap_or(false)),
                     signature: None,
                     account_include: tf.account_include.clone(),
                     account_exclude: tf.account_exclude.clone(),
@@ -133,5 +134,90 @@ impl SubscriptionManager {
     /// Get configuration
     pub fn get_config(&self) -> &ClientConfig {
         &self.config
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::streaming::yellowstone_grpc::TransactionFilter;
+
+    #[test]
+    fn test_get_subscribe_request_filter_default_none() {
+        let manager = SubscriptionManager::new(
+            "test".to_string(),
+            None,
+            ClientConfig::default(),
+        );
+
+        let filter = TransactionFilter {
+            account_include: vec!["test".to_string()],
+            account_exclude: vec![],
+            account_required: vec![],
+        };
+
+        // None должен давать failed: Some(false)
+        let result = manager.get_subscribe_request_filter(
+            vec![filter],
+            None,
+            None, // include_failed = None
+        );
+
+        assert!(result.is_some());
+        let transactions = result.unwrap();
+        let tx_filter = transactions.get("transaction_0").unwrap();
+        assert_eq!(tx_filter.failed, Some(false));
+    }
+
+    #[test]
+    fn test_get_subscribe_request_filter_with_failed_true() {
+        let manager = SubscriptionManager::new(
+            "test".to_string(),
+            None,
+            ClientConfig::default(),
+        );
+
+        let filter = TransactionFilter {
+            account_include: vec!["test".to_string()],
+            account_exclude: vec![],
+            account_required: vec![],
+        };
+
+        let result = manager.get_subscribe_request_filter(
+            vec![filter],
+            None,
+            Some(true), // include_failed = Some(true)
+        );
+
+        assert!(result.is_some());
+        let transactions = result.unwrap();
+        let tx_filter = transactions.get("transaction_0").unwrap();
+        assert_eq!(tx_filter.failed, Some(true));
+    }
+
+    #[test]
+    fn test_get_subscribe_request_filter_with_failed_false() {
+        let manager = SubscriptionManager::new(
+            "test".to_string(),
+            None,
+            ClientConfig::default(),
+        );
+
+        let filter = TransactionFilter {
+            account_include: vec!["test".to_string()],
+            account_exclude: vec![],
+            account_required: vec![],
+        };
+
+        let result = manager.get_subscribe_request_filter(
+            vec![filter],
+            None,
+            Some(false), // include_failed = Some(false)
+        );
+
+        assert!(result.is_some());
+        let transactions = result.unwrap();
+        let tx_filter = transactions.get("transaction_0").unwrap();
+        assert_eq!(tx_filter.failed, Some(false));
     }
 }

@@ -70,6 +70,7 @@ async fn main() -> Result<()> {
             vec![account_filter],
             Some(trade_event_filter),
             None,
+            None,
             callback,
         )
         .await
@@ -97,6 +98,7 @@ async fn main() -> Result<()> {
         .update_subscription(
             vec![multi_protocol_filter],
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+            None,
         )
         .await
     {
@@ -123,6 +125,7 @@ async fn main() -> Result<()> {
         .update_subscription(
             vec![raydium_cpmm_filter],
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+            None,
         )
         .await
     {
@@ -149,6 +152,7 @@ async fn main() -> Result<()> {
         .update_subscription(
             vec![pumpfun_only_filter],
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+            None,
         )
         .await
     {
@@ -175,6 +179,7 @@ async fn main() -> Result<()> {
         .update_subscription(
             vec![empty_filter],
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+            None,
         )
         .await
     {
@@ -207,6 +212,7 @@ async fn main() -> Result<()> {
         .update_subscription(
             vec![silence_filter],
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+            None,
         )
         .await
     {
@@ -268,6 +274,7 @@ async fn main() -> Result<()> {
                 account_required: vec![],
             }],
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+            None,
             None,
             None,
             shutdown_callback,
@@ -341,6 +348,7 @@ async fn main() -> Result<()> {
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
             None,
             None,
+            None,
             test_callback,
         )
         .await
@@ -372,6 +380,7 @@ async fn main() -> Result<()> {
                 account_required: vec![],
             }],
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+            None,
             None,
             None,
             client2_callback,
@@ -408,6 +417,7 @@ async fn main() -> Result<()> {
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
             None,
             None,
+            None,
             test_callback_advanced,
         )
         .await
@@ -424,6 +434,7 @@ async fn main() -> Result<()> {
                         account_required: vec![],
                     }],
                     vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+                    None,
                     None,
                     None,
                     |_| {},
@@ -461,6 +472,7 @@ async fn main() -> Result<()> {
                 account_required: vec![],
             }],
             vec![AccountFilter { account: vec![], owner: vec![], filters: vec![] }],
+            None,
             None,
             None,
             client4_callback,

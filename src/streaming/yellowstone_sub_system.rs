@@ -44,7 +44,7 @@ impl YellowstoneGrpc {
         let account_exclude = account_exclude.unwrap_or_default();
         let tx_filter =
             vec![TransactionFilter { account_include, account_exclude, account_required: addrs }];
-        let transactions = self.subscription_manager.get_subscribe_request_filter(tx_filter, None);
+        let transactions = self.subscription_manager.get_subscribe_request_filter(tx_filter, None, None);
         let (mut subscribe_tx, mut stream, _) = self
             .subscription_manager
             .subscribe_with_request(transactions, None, None, None)

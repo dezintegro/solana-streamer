@@ -87,6 +87,7 @@ async fn test_grpc() -> Result<(), Box<dyn std::error::Error>> {
         vec![pump_usdc_account_filter.clone(), wsol_deepseekai_account_filter.clone()],
         event_type_filter.clone(),
         None,
+        None,
         callback,
     )
     .await?;

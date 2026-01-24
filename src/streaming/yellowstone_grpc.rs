@@ -126,6 +126,7 @@ impl YellowstoneGrpc {
     /// * `account_filter` - Account filter specifying accounts and owners to monitor
     /// * `event_filter` - Optional event filter for further event filtering, no filtering if None
     /// * `commitment` - Optional commitment level, defaults to Confirmed
+    /// * `include_failed` - Optional flag to subscribe to failed transactions (None = only successful, Some(true) = only failed, Some(false) = only successful explicitly)
     /// * `callback` - Event callback function that receives parsed unified events
     ///
     /// # Returns
@@ -138,6 +139,7 @@ impl YellowstoneGrpc {
         account_filter: Vec<AccountFilter>,
         event_type_filter: Option<EventTypeFilter>,
         commitment: Option<CommitmentLevel>,
+        include_failed: Option<bool>,
         callback: F,
     ) -> AnyResult<()>
     where
@@ -160,7 +162,7 @@ impl YellowstoneGrpc {
 
         let transactions = self
             .subscription_manager
-            .get_subscribe_request_filter(transaction_filter, event_type_filter.as_ref());
+            .get_subscribe_request_filter(transaction_filter, event_type_filter.as_ref(), include_failed);
         let accounts = self
             .subscription_manager
             .subscribe_with_account_request(account_filter, event_type_filter.as_ref());
@@ -287,6 +289,7 @@ impl YellowstoneGrpc {
     /// # Parameters
     /// * `transaction_filter` - New transaction filter to apply
     /// * `account_filter` - New account filter to apply
+    /// * `include_failed` - Optional flag to subscribe to failed transactions (None = only successful, Some(true) = only failed, Some(false) = only successful explicitly)
     ///
     /// # Returns
     /// Returns `AnyResult<()>` on success, error on failure
@@ -294,6 +297,7 @@ impl YellowstoneGrpc {
         &self,
         transaction_filter: Vec<TransactionFilter>,
         account_filter: Vec<AccountFilter>,
+        include_failed: Option<bool>,
     ) -> AnyResult<()> {
         let mut control_sender = {
             let control_guard = self.control_tx.lock().await;
@@ -321,6 +325,7 @@ impl YellowstoneGrpc {
             .get_subscribe_request_filter(
                 transaction_filter,
                 self.event_type_filter.read().await.as_ref(),
+                include_failed,
             )
             .unwrap_or_default();
 
