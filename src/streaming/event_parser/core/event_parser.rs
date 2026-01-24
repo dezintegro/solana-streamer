@@ -161,6 +161,7 @@ impl EventParser {
                             bot_wallet,
                             transaction_index,
                             inner_instructions,
+                            None, // outer_program_id - outer instruction has no outer program
                             adapter_callback.clone(),
                         )?;
                     }
@@ -183,6 +184,7 @@ impl EventParser {
                                 bot_wallet,
                                 transaction_index,
                                 Some(&inner_instructions),
+                                Some(program_id), // outer_program_id - program ID of the outer instruction
                                 adapter_callback.clone(),
                             )?;
                         }
@@ -250,6 +252,7 @@ impl EventParser {
                             bot_wallet,
                             transaction_index,
                             inner_instructions,
+                            None, // outer_program_id - outer instruction has no outer program
                             callback.clone(),
                         )?;
                     }
@@ -280,6 +283,7 @@ impl EventParser {
                                 bot_wallet,
                                 transaction_index,
                                 Some(&inner_instructions),
+                                Some(program_id), // outer_program_id - program ID of the outer instruction
                                 callback.clone(),
                             )?;
                         }
@@ -309,6 +313,7 @@ impl EventParser {
         bot_wallet: Option<Pubkey>,
         transaction_index: Option<u64>,
         inner_instructions: Option<&yellowstone_grpc_proto::prelude::InnerInstructions>,
+        outer_program_id: Option<Pubkey>,
         callback: Arc<dyn for<'a> Fn(&'a DexEvent) + Send + Sync>,
     ) -> anyhow::Result<()> {
         // 添加边界检查以防止越界访问
@@ -343,6 +348,7 @@ impl EventParser {
             Default::default(), // protocol will be set by dispatcher
             Default::default(), // event_type will be set by dispatcher
             program_id,
+            outer_program_id,
             outer_index,
             inner_index,
             recv_us,
@@ -491,6 +497,7 @@ impl EventParser {
         bot_wallet: Option<Pubkey>,
         transaction_index: Option<u64>,
         inner_instructions: Option<&InnerInstructions>,
+        outer_program_id: Option<Pubkey>,
         callback: Arc<dyn for<'a> Fn(&'a DexEvent) + Send + Sync>,
     ) -> anyhow::Result<()> {
         // 添加边界检查以防止越界访问
@@ -526,6 +533,7 @@ impl EventParser {
             Default::default(), // protocol will be set by dispatcher
             Default::default(), // event_type will be set by dispatcher
             program_id,
+            outer_program_id,
             outer_index,
             inner_index,
             recv_us,

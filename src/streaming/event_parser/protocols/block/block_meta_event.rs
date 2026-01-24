@@ -27,6 +27,7 @@ impl BlockMetaEvent {
             crate::streaming::event_parser::common::types::ProtocolType::Common,
             EventType::BlockMeta,
             solana_sdk::pubkey::Pubkey::default(),
+            None, // outer_program_id
             0,
             None,
             recv_us,
