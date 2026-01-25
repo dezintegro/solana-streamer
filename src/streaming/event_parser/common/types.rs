@@ -313,6 +313,7 @@ pub struct EventMetadata {
     pub swap_data: Option<SwapData>,
     pub outer_index: i64,
     pub inner_index: Option<i64>,
+    pub is_successful: bool,
 }
 
 impl EventMetadata {
@@ -330,6 +331,7 @@ impl EventMetadata {
         inner_index: Option<i64>,
         recv_us: i64,
         transaction_index: Option<u64>,
+        is_successful: bool,
     ) -> Self {
         Self {
             signature,
@@ -346,6 +348,7 @@ impl EventMetadata {
             outer_index,
             inner_index,
             transaction_index,
+            is_successful,
         }
     }
 

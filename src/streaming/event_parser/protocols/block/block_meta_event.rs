@@ -32,6 +32,7 @@ impl BlockMetaEvent {
             None,
             recv_us,
             None,
+            true, // BlockMeta события всегда успешны
         );
         Self { metadata, slot, block_hash }
     }

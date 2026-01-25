@@ -52,6 +52,7 @@ impl EventParser {
                 let mut inner_instructions: Vec<
                     yellowstone_grpc_proto::solana::storage::confirmed_block::InnerInstructions,
                 > = vec![];
+                let is_successful;
 
                 if let Some(meta) = grpc_tx.meta {
                     inner_instructions = meta.inner_instructions;
@@ -63,6 +64,11 @@ impl EventParser {
                     address_table_lookups.extend(
                         loaded_writable_addresses.into_iter().chain(loaded_readonly_addresses),
                     );
+                    // Проверка статуса: если err = None, то транзакция успешна
+                    is_successful = meta.err.is_none();
+                } else {
+                    // Если meta отсутствует, предполагаем что транзакция успешна
+                    is_successful = true;
                 }
 
                 let mut accounts_bytes: Vec<Vec<u8>> =
@@ -94,6 +100,7 @@ impl EventParser {
                     &inner_instructions,
                     bot_wallet,
                     transaction_index,
+                    is_successful,
                     adapter_callback,
                 )
                 .await?;
@@ -162,6 +169,7 @@ impl EventParser {
                             transaction_index,
                             inner_instructions,
                             None, // outer_program_id - outer instruction has no outer program
+                            true, // Для VersionedTransaction предполагаем успех
                             adapter_callback.clone(),
                         )?;
                     }
@@ -185,6 +193,7 @@ impl EventParser {
                                 transaction_index,
                                 Some(&inner_instructions),
                                 Some(program_id), // outer_program_id - program ID of the outer instruction
+                                true, // Для VersionedTransaction предполагаем успех
                                 adapter_callback.clone(),
                             )?;
                         }
@@ -216,6 +225,7 @@ impl EventParser {
         inner_instructions: &[yellowstone_grpc_proto::prelude::InnerInstructions],
         bot_wallet: Option<Pubkey>,
         transaction_index: Option<u64>,
+        is_successful: bool,
         callback: Arc<dyn for<'a> Fn(&'a DexEvent) + Send + Sync>,
     ) -> anyhow::Result<()> {
         // 获取交易的指令和账户
@@ -253,6 +263,7 @@ impl EventParser {
                             transaction_index,
                             inner_instructions,
                             None, // outer_program_id - outer instruction has no outer program
+                            is_successful,
                             callback.clone(),
                         )?;
                     }
@@ -284,6 +295,7 @@ impl EventParser {
                                 transaction_index,
                                 Some(&inner_instructions),
                                 Some(program_id), // outer_program_id - program ID of the outer instruction
+                                is_successful,
                                 callback.clone(),
                             )?;
                         }
@@ -314,6 +326,7 @@ impl EventParser {
         transaction_index: Option<u64>,
         inner_instructions: Option<&yellowstone_grpc_proto::prelude::InnerInstructions>,
         outer_program_id: Option<Pubkey>,
+        is_successful: bool,
         callback: Arc<dyn for<'a> Fn(&'a DexEvent) + Send + Sync>,
     ) -> anyhow::Result<()> {
         // 添加边界检查以防止越界访问
@@ -353,6 +366,7 @@ impl EventParser {
             inner_index,
             recv_us,
             transaction_index,
+            is_successful,
         );
 
         if is_cu_program {
@@ -498,6 +512,7 @@ impl EventParser {
         transaction_index: Option<u64>,
         inner_instructions: Option<&InnerInstructions>,
         outer_program_id: Option<Pubkey>,
+        is_successful: bool,
         callback: Arc<dyn for<'a> Fn(&'a DexEvent) + Send + Sync>,
     ) -> anyhow::Result<()> {
         // 添加边界检查以防止越界访问
@@ -538,6 +553,7 @@ impl EventParser {
             inner_index,
             recv_us,
             transaction_index,
+            is_successful,
         );
 
         if is_cu_program {
